@@ -1,8 +1,8 @@
 <template>
   <div class="chatHome">
-    <div class="chatLeft" style="width:22%" v-show="showPersonList">
+    <div class="chatLeft" style="width:20%" v-show="showPersonList">
       <div class="title" style="text-align: center;">
-        <svg t="1679634305168" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+        <!--svg t="1679634305168" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
           p-id="3634" width="40" height="40">
           <path
             d="M512 960.4c-23.2 0-46.5-6-67.2-17.9L173.5 785.8c-41.4-23.9-67.2-68.5-67.2-116.3V356.1c0-47.8 25.7-92.4 67.2-116.3L444.8 83.1c41.4-23.9 92.9-23.9 134.3 0l271.4 156.7c41.4 23.9 67.2 68.5 67.2 116.3v313.4c0 47.8-25.7 92.4-67.2 116.3L579.2 942.5c-20.7 11.9-44 17.9-67.2 17.9z m0-805.6c-7.7 0-15.4 2-22.3 6L218.3 317.5c-13.8 7.9-22.3 22.7-22.3 38.6v313.4c0 15.9 8.5 30.7 22.3 38.6l271.4 156.7c13.8 7.9 30.8 7.9 44.6 0l271.4-156.7c13.8-7.9 22.3-22.7 22.3-38.6V356.1c0-15.9-8.5-30.7-22.3-38.6L534.3 160.8c-6.9-4-14.6-6-22.3-6z"
@@ -13,8 +13,9 @@
           <path
             d="M512 805.8c-24.8 0-44.9-20.1-44.9-44.9V514.1c0-24.8 20.1-44.9 44.9-44.9s44.9 20.1 44.9 44.9V761c0 24.7-20.1 44.8-44.9 44.8z"
             fill="#ffffff" p-id="3637"></path>
-        </svg>
-        <h2>OpenAI Manage</h2>
+        </svg-->
+        <h3>智能化可信软件工程实验室</h3>
+		<h3>AI Manage</h3>
       </div>
       <div class="online-person" style="margin-top: 5%;">
         <el-row :gutter="24">
@@ -140,7 +141,7 @@
       <el-card shadow="hover" id="jianbian" style="line-height: 120%;text-align: center;">
         总余额：${{ this.moneryInfo.totalGranted | numFilterReservedTwo }}<br />
         可用余额：${{ this.moneryInfo.totalAvailable | numFilterReservedSix }}<br />
-        消耗余额：${{ moneryInfo.totalUsed | numFilterReservedSix }}<br />
+        消耗额度：${{ moneryInfo.totalUsed | numFilterReservedSix }}<br />
       </el-card>
 
       <div class="online-person">

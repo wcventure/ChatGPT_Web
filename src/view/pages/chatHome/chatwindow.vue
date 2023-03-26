@@ -115,12 +115,12 @@
           <Emoji v-show="showEmoji" @sendEmoji="sendEmoji" @closeEmoji="clickEmoji"></Emoji>
         </div>
         <!--输入框-->
-        <el-input type="textarea"  id="textareaMsg" ref="textInput" :autosize="{}"  class="textarea" v-model="inputMsg" maxlength="2000" style="margin-left: 2%;margin-top: 3px;min-height: 51px;max-height:400px;max-width: 80%;min-width: 45%;  height: auto;"  @keydown.shift.enter="newLine" :rows="rows"  @keydown.enter.prevent placeholder="在此输入您的提示词~"></el-input>
-        <!-- <textarea id="textareaMsg" ref="textInput" class="textarea"
+        <textarea id="textareaMsg" ref="textInput" :autosize="{}"  class="inputs" v-model="inputMsg" maxlength="3000" style="margin-left: 2%;margin-top: 3px;min-height: 51px;max-height:300px;max-width: 80%;min-width: 45%;  height: auto;" @keyup.shift.enter="newLine" :rows="rows" @keyup.ctrl.enter="sendText" placeholder="在此输入消息，Ctrl+Enter发送~" ></textarea>
+        <!--textarea id="textareaMsg" ref="textInput" class="textarea"
           style="z-index: 9999999999;min-height: 50px;max-height:400px;max-width: 80%;min-width: 45%;  height: auto;"
           maxlength="2000" dir autocorrect="off" aria-autocomplete="both" spellcheck="false" autocapitalize="off"
           autocomplete="off" v-model="inputMsg" @keydown.shift.enter="newLine"  @keydown.enter.prevent
-          placeholder="在此输入您的提示词~"></textarea> -->
+          placeholder="在此输入消息，Ctrl+Enter发送~"></textarea-->
         <!--发送-->
         <div>
           <div class="send boxinput" @click="sendText">
@@ -899,17 +899,28 @@ textarea::-webkit-scrollbar-thumb {
       box-sizing: border-box;
 
       &::-webkit-scrollbar {
-        width: 3px;
         /* 设置滚动条宽度 */
+		width: 10px;
+        height: 10px;
+        border-radius: 10px;
+        background-color: #1a1735;
       }
 
       &::-webkit-scrollbar-thumb {
-        background-color: rgb(66, 70, 86);
+        /* background-color: rgb(66, 70, 86); */
         /* 设置滚动条滑块的背景色 */
-        border-radius: 50%;
+        /* border-radius: 50%; */
         /* 设置滑块的圆角 */
+		border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+        background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0.44,rgb(60,186,146)),color-stop(0.72,rgb(253,187,45)),color-stop(0.86,rgb(253,187,45)));
       }
-
+	  
+      &::-webkit-scrollbar-track {
+        border-radius: 10px;
+        -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+      }
+	  
       .chat-friend {
         width: 100%;
         float: left;
