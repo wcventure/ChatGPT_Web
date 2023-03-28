@@ -20,22 +20,22 @@
       <div class="online-person" style="margin-top: 5%;">
         <el-row :gutter="24">
           <el-col :span="6">
-            <div class="setting">
+            <div class="setting" style="text-align: center;">
               <span class="" @click="sessionClick" :class="{ whiteText: cutSetting === 1 }">会话</span>
             </div>
           </el-col>
           <el-col :span="6">
-            <div class="setting">
+            <div class="setting" style="text-align: center;">
               <span class="" @click="modelClick" :class="{ whiteText: cutSetting === 0 }">模型</span>
             </div>
           </el-col>
           <el-col :span="6">
-            <div class="setting">
+            <div class="setting" style="text-align: center;">
               <span class="" @click="fineTuningClick" :class="{ whiteText: cutSetting === 2 }">微调</span>
             </div>
           </el-col>
           <el-col :span="6">
-            <div class="setting">
+            <div class="setting" style="text-align: center;">
               <span class="" @click="fileClick" :class="{ whiteText: cutSetting === 3 }">文件</span>
             </div>
           </el-col>
@@ -215,7 +215,14 @@
                 <el-slider class="astrict" v-model="SettingInfo.PresencePenalty" :step="0.1" :min="-2"
                   :max="2"></el-slider>
               </div>
-              <div style="height: 30px;"></div>
+              <!-- <div class="block">
+                <el-tooltip class="item" effect="dark" content="开启读文模式" placement="top">
+                  <span class="demonstration">开启读文模式</span>
+                </el-tooltip>
+                <el-switch v-model="SettingInfo.readefile" :width="defaulWidth"
+                  style="margin-left: 15%;"></el-switch>
+              </div>
+              <div style="height: 30px;"></div> -->
             </div>
           </el-collapse-transition>
 
@@ -306,6 +313,9 @@
           <!--微调-->
           <el-collapse-transition>
             <div v-show="SettingStatus == 3">
+              <div class="fineTune boxinput" @click="retrieveFine" style="margin-left: 0px;margin-right: 0px;width: 99%;">
+                检索微调
+              </div>
               <div class="fineTune boxinput" @click="cancelFine" style="margin-left: 0px;margin-right: 0px;width: 99%;">
                 取消微调
               </div>
@@ -368,7 +378,7 @@
                       <span class="demonstration" style="">batchSize</span>
                     </el-tooltip>
 
-                    <input class="weitiao" v-model="SettingInfo.fineTunes.batch_size" placeholder="每批数据的大小" />
+                    <input class="weitiao" v-model="SettingInfo.batch_sizeStr" placeholder="每批数据的大小" />
                   </div>
 
                   <div class="block">
@@ -464,13 +474,13 @@
                 </svg>
                 上传文件
               </div>
-              <div class="fineTune boxinput" style="margin-left: 0px;margin-right: 0px;width: 99%;">
+              <div class="fineTune boxinput" @click="deleteOnFile" style="margin-left: 0px;margin-right: 0px;width: 99%;">
                 删除文件
               </div>
-              <div class="fineTune boxinput" style="margin-left: 0px;margin-right: 0px;width: 99%;">
+              <div class="fineTune boxinput" @click="retrieveOnFile"  style="margin-left: 0px;margin-right: 0px;width: 99%;">
                 查看文件
               </div>
-              <div class="fineTune boxinput" style="margin-left: 0px;margin-right: 0px;width: 99%;">
+              <div class="fineTune boxinput" @click="retrieveOnFileContent"  style="margin-left: 0px;margin-right: 0px;width: 99%;">
                 查看文件内容
               </div>
             </div>
@@ -553,9 +563,10 @@ import Session from "@/components/Session.vue";
 import File from "@/components/File.vue";
 import ChatWindow from "./chatwindow.vue";
 import { AI_HEAD_IMG_URL } from '@/store/mutation-types'
-import { getModels, getMoneyInfo, getFineTunesList, getFilesList, uploadFile, createFineTune, cancelFineTune, deleteFineTuneModel } from "@/api/getData";
+import { getModels, getMoneyInfo, getFineTunesList, getFilesList, uploadFile, createFineTune, cancelFineTune, deleteFineTuneModel,retrieveFineTune,deleteFile,retrieveFile,retrieveFileContent } from "@/api/getData";
 import { saveAs } from 'file-saver';
-
+import {  getNowTime, JCMFormatDate,JCMFormatTimestamp } from "@/util/util";
+const { Configuration, OpenAIApi } = require("openai");
 export default {
   name: "App",
   components: {
@@ -583,8 +594,12 @@ export default {
         totalUsed: 0,
         totalAvailable: 0
       },
+
+      batch_sizeStr: "",
       //全部的设置参数
       SettingInfo: {
+        readefile:false,
+        inputStatus:true,
         translateEnglish: false,
         openProductionPicture: false,
         openChangePicture: false,
@@ -604,7 +619,7 @@ export default {
           validation_file: undefined,
           model: "curie",
           n_epochs: 4,
-          batch_size: undefined,
+          batch_size:null,
           learning_rate_multiplier: undefined,
           prompt_loss_weight: 0.01,
           compute_classification_metrics: false,
@@ -628,6 +643,8 @@ export default {
       modelSearch: "",
       //文件列表
       fileList: [],
+      //文件缓存列表
+      fineTuningSearch:[],
       //微调模型列表
       fineTuningList: [],
       //微调模型缓存列表
@@ -692,6 +709,10 @@ export default {
     this.$watch('SettingInfo.KeyMsg', this.watchKeyMsg);
     this.$watch('SettingInfo.contentImageUrl', this.watchContentImageUrl);
     this.$watch('modelSearch', this.watchModelSearch);
+    this.$watch('fineTuningSearch', this.watchFineTuningSearch);
+    this.$watch('fileSearch', this.watchFileSearch);
+    
+    this.$watch('SettingInfo.batch_sizeStr', this.batchSizeToInt);
     this.$watch('SettingInfo.openChangePicture', this.watchOpenChangePicture);
     this.$watch('SettingInfo.openProductionPicture', this.watchOpenProductionPicture);
   },
@@ -709,10 +730,11 @@ export default {
     //显示取消过的微调模型
     showCancelFine() {
       this.cancelFineStatus = true
-
+      this.fineTuningList=this.fineTuningCacheList
     },
     hidenCancelFine() {
       this.cancelFineStatus = false
+      this.fineTuningList=this.fineTuningCacheList.filter(fineTunin=>fineTunin.fineTunesStatus==="succeeded")
     },
     //导入会话列表触发的方法
     importFromJsonArrAll() {
@@ -776,7 +798,6 @@ export default {
     },
     //获取模型列表
     getModelList(key) {
-
       getModels(key).then((modelsRes) => {
         // 提取fineTunesRes集合中所有id属性值
         getFineTunesList(key).then((fineTunesRes) => {
@@ -813,6 +834,7 @@ export default {
     getFilessList(key) {
       getFilesList(key).then((res) => {
         this.fileList = res
+        this.fileCacheList = res
       }).catch(e => {
         this.$message({
           message: "获取文件列表失败哦~",
@@ -842,6 +864,11 @@ export default {
         this.showSetupList = true;
       };
     },
+    watchBatchSizeToInt: function (newVal, oldVal) {
+      if (newVal) {
+        this.SettingInfo.batchSize = parseInt(newVal)
+      }
+    },
     // 监听openChangePicture属性的变化
     watchOpenChangePicture: function (newVal, oldVal) {
       if (newVal) {
@@ -859,6 +886,32 @@ export default {
         this.$refs.chatWindow.updateContentImageUrl(newVal)
       } else {
         this.$refs.chatWindow.updateContentImageUrl("https://bpic.51yuansu.com/backgd/cover/00/31/39/5bc8088deeedd.jpg?x-oss-process=image/resize,w_780")
+      }
+    },
+    //监听fineTuningSearch属性的变化
+    watchFineTuningSearch:function (newVal, oldVal) {
+      if (this.fineTuningList.length !== 0) {
+        if(!this.cancelFineStatus){
+          this.fineTuningList = this.fineTuningCacheList.filter(fineTunin=>fineTunin.fineTunesStatus==="succeeded").filter(fineTuning => fineTuning.id.includes(newVal))
+        }else{
+          this.fineTuningList = this.fineTuningCacheList.filter(fineTuning => fineTuning.id.includes(newVal))
+        }
+      }
+      if (newVal == "") {
+        if(!this.cancelFineStatus){
+          this.fineTuningList = this.fineTuningCacheList.filter(fineTunin=>fineTunin.fineTunesStatus==="succeeded")
+        }else{
+          this.fineTuningList = this.fineTuningCacheList
+        }
+      }
+    },
+    //监听fileSearch属性的变化
+    watchFileSearch:function(newVal, oldVal) {
+      if (this.fileList.length !== 0) {
+        this.fileList = this.fileCacheList.filter(fileList => fileList.id.includes(newVal))
+      }
+      if (newVal == "") {
+        this.fileList = this.fileCacheList
       }
     },
     // 监听modelSearch属性的变化
@@ -935,27 +988,18 @@ export default {
     },
     //模型列表被点击
     modelClick() {
+      this.clearCurrent()
       this.getModelList(this.SettingInfo.KeyMsg)
       //清除被点击的微调对象
       this.fineTuningInfo = {};
-      //清除当前选择的会话
-      this.sessionCurrent = "";
-      //清除当前选择的微调
-      this.ftCurrent = "";
       this.SettingStatus = 0
       this.cutSetting = 0
       this.showChatWindow = false;
     },
     //会话列表被点击
     sessionClick() {
-      //清除被点击的微调对象
-      this.fineTuningInfo = {};
-      //清除当前选择的微调
-      this.ftCurrent = "";
-      //清除当前选择的模型
-      this.pcCurrent = "";
+      this.clearCurrent()
       this.SettingStatus = 5
-      this.sessionCurrent = ""
       this.cutSetting = 1
       this.chatWindowInfo = {
         img: "",
@@ -970,18 +1014,26 @@ export default {
     },
     //微调模型列表被点击
     fineTuningClick() {
-      //清除当前选择的模型微调模型
-      this.ftCurrent = ""
-      //清除当前选择的模型
-      this.pcCurrent = "";
+      this.clearCurrent()
       this.SettingStatus = 3;
       this.cutSetting = 2
       this.showChatWindow = false;
       //获取微调模型列表
       this.getFineTunessList(this.SettingInfo.KeyMsg)
     },
+    clearCurrent(){
+      //清除当前选择的模型微调模型
+      this.ftCurrent = ""
+      //清除当前选择的模型
+      this.pcCurrent = "";
+      //清除当前选择的会话
+      this.sessionCurrent = "";
+      //清除当前选择的文件
+      this.fiCurrent= "";
+    },
     //文件列表被点击
     fileClick() {
+      this.clearCurrent()
       //清除被点击的微调对象
       this.fineTuningInfo = {};
       this.SettingStatus = 4;
@@ -989,7 +1041,7 @@ export default {
       //获取微调模型列表
       this.getFilessList(this.SettingInfo.KeyMsg)
     },
-    //山那个穿按钮被点击触发的方法
+    //上传文件按钮被点击触发的方法
     uploadFile() {
       this.$refs.fileInput.click();
     },
@@ -1015,6 +1067,51 @@ export default {
         this.getFilessList(this.SettingInfo.KeyMsg)
       })
     },
+    //检索文件信息
+    retrieveOnFile(){
+      if (!this.fileInfo || !this.fileInfo.fileId) {
+        this.$message.error("只能检索文件哦~")
+      } else {
+        retrieveFile(this.fileInfo.fileId, this.SettingInfo.KeyMsg).then((res) => {
+          let context="`文件ID:`"+res.id+"  \n"
+                  +"`文件名称:`"+res.filename+"  \n"
+                  +"`文件大小:`"+(res.bytes/1024/1024).toFixed(2)+"MB \n"
+                  +"`对象:`"+res.object+"  \n"
+                  +"`状态:`"+res.status+"  \n"
+                  +"`状态描述`"+res.status_details+"  \n"
+                  +"`目的` "+res.purpose+" \n"
+                  +"`文件创建时间`"+JCMFormatTimestamp(res.created_at);
+          let retrieveFineTuneMsg = {
+            headImg: AI_HEAD_IMG_URL,
+            name: res.filename,
+            time: JCMFormatDate(getNowTime()),
+            msg: context,
+            chatType: 0, 
+            uid: res.id, 
+          };
+          this.$refs.chatWindow.sendMsg(retrieveFineTuneMsg)
+          console.log(res)
+        }).catch(e => {
+          this.$message.error("文件检索失败了~")
+        })
+      }
+    },
+    //检索文件内容
+    async retrieveOnFileContent(){
+      if (!this.fileInfo || !this.fileInfo.fileId) {
+        this.$message.error("只能检索文件内容哦~")
+      } else {
+        try{
+          const configuration = new Configuration({
+            apiKey:  this.SettingInfo.KeyMsg,
+          });
+          const openai = new OpenAIApi(configuration);
+          const response = await openai.downloadFile(this.fileInfo.fileId);
+        }catch(e){
+          this.$message.error("OpenAI为了减少滥用，免费帐户将无法下载微调训练的文件~")
+        }
+      }
+    },
     //模型被点击
     clickPerson(info) {
       this.storeStatus = 0;
@@ -1029,20 +1126,12 @@ export default {
     },
     //会话被点击
     clickSession(info) {
-      //清除当前选择的微调
-      this.ftCurrent = "";
-      //清除当前选择的模型
-      this.pcCurrent = "";
       this.sessionCurrent = info.id;
       this.$refs.chatWindow.assignmentMesList(info.dataList)
     },
     //微调模型被点击
     clickFineTuning(info) {
       this.storeStatus = 1;
-      //清除当前选择的会话
-      this.sessionCurrent = "";
-      //清除当前选择的模型
-      this.pcCurrent = "";
       //显示当前聊天窗口
       this.showChatWindow = true;
       //传入当前聊天窗口信息
@@ -1054,7 +1143,32 @@ export default {
     },
     //文件被点击
     clickFile(info) {
-
+      this.chatWindowInfo = {
+        img: "",
+        name: info.id,
+        detail: info.detail,
+        lastMsg: info.lastMsg,
+        id: info.id
+      }
+      this.fiCurrent=info.fileId
+      this.fileInfo=info
+      //显示当前聊天窗口
+      this.showChatWindow = true;
+      
+      this.$refs.chatWindow.updateInputsStatus(false)
+    },
+    //删除文件
+    deleteOnFile(){
+      if (!this.fileInfo || !this.fileInfo.fileId) {
+        this.$message.error("只能删除文件哦~")
+      } else {
+        deleteFile(this.fileInfo.fileId, this.SettingInfo.KeyMsg).then((res) => {
+          this.$message.success("恭喜您删除成功~")
+          this.getFilessList(this.SettingInfo.KeyMsg)
+        }).catch(e => {
+          this.$message.error("文件删除失败了~")
+        })
+      }
     },
     //创建微调
     createFine() {
@@ -1091,6 +1205,83 @@ export default {
         }).catch(e => {
           console.log(e)
           this.$message.error("取消微调模型失败~")
+        })
+      }
+    },
+    //检索微调
+    retrieveFine(){
+      if (!this.fineTuningInfo || !this.fineTuningInfo.fineTunesId) {
+        this.$message.error("只能检索的微调模型哦~")
+      } else {
+        console.log(this.fineTuningInfo.fineTunesId)
+        retrieveFineTune(this.fineTuningInfo.fineTunesId, this.SettingInfo.KeyMsg).then((res) => {
+          let context="`微调任务ID:`"+res.id+"  \n"
+                  +"`任务类型:`"+res.object+"  \n"
+                  +"`模型的类型:`"+res.model+"  \n"
+                  +"`微调任务的创建时间:`"+JCMFormatTimestamp(res.created_at)+"  \n"
+                  +"`微调的事件列表`  \n"
+                  +"| 对象 | 日志级别 | 信息 | 创建时间  |\n"
+                  +"| :------: | :------: | :------: | :------: |\n";
+          res.events.forEach(obj => {
+            context += `| ${obj.object} | ${obj.level} | ${obj.message} | ${ JCMFormatTimestamp(obj.created_at) } |\n`;
+          });
+          context +="\n `微调的模型ID:`"+ res.fine_tuned_model 
+                  +"\n\n `微调使用的参数:` \n"
+                  +"| 属性 | 设置的值 | \n"
+                  +"| :------: | :------: | \n";
+          for (let prop in res.hyperparams) {
+            if (res.hyperparams.hasOwnProperty(prop)) {
+              context += `| ${prop} | ${res.hyperparams[prop]} |\n`;
+            }
+          }
+         context+="\n`用户所属组:`"+res.organization_id;
+
+         if(res.result_files.length==0){
+            context+="\n\n`训练结果文件列表:没有`\n\n"
+         }else{
+            context+="\n\n`训练结果文件列表:`\n\n"
+                  +"| ID  | 文件名称 | 文件大小 |   对象 | 状态 |    \n"
+                  +"| :------: | :------: | :------: | :------: | :------: | \n";
+            res.result_files.forEach(obj => {
+              context += `| ${obj.id} | ${obj.filename}  | ${(obj.bytes/1024/1024).toFixed(2)+"MB"} | ${obj.object} | ${obj.status} |  \n`;
+            });   
+         }
+          context+="\n`状态:`"+res.status+"\n";
+
+          if(res.training_files.length==0){
+            context+="\n\n`训练的文件列表:没有`\n\n"
+          }else{
+            context+="\n\n`训练的文件列表:`\n\n"
+                  +"| ID  | 文件名称 | 文件大小 |   对象 | 状态 |  \n"
+                  +"| :------: | :------: | :------: | :------: | :------: | \n";
+            res.training_files.forEach(obj => {
+              context += `| ${obj.id} | ${obj.filename}  | ${(obj.bytes/1024/1024).toFixed(2)+"MB"} | ${obj.object} | ${obj.status} |  \n`;
+            }); 
+          }
+          if(res.validation_files.length==0){
+            context+="\n\n`验证的文件列表:没有`\n\n"
+          }else{
+            context+="\n\n`验证的文件列表:`\n\n"
+            +"| ID  | 文件名称 | 文件大小 |   对象 | 状态 |  \n"
+             +"| :------: | :------: | :------: | :------: | :------: | \n";
+            res.validation_files.forEach(obj => {
+              context += `| ${obj.id} | ${obj.filename}  | ${(obj.bytes/1024/1024).toFixed(2)+"MB"} | ${obj.object} | ${obj.status} |  \n`;
+            }); 
+          }
+          context+="\n`最后更新时间戳:`"+JCMFormatTimestamp(res.updated_at);
+         let retrieveFineTuneMsg = {
+            headImg: AI_HEAD_IMG_URL,
+            name: res.fine_tuned_model!==null?res.fine_tuned_model:res.id,
+            time: JCMFormatDate(getNowTime()),
+            msg: context,
+            chatType: 0, 
+            uid: res.id, 
+          };
+          this.$refs.chatWindow.sendMsg(retrieveFineTuneMsg)
+          console.log(res)
+        }).catch(e => {
+          console.log(e)
+          this.$message.error("检索微调模型失败~")
         })
       }
     },

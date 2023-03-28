@@ -17,9 +17,9 @@
         </el-col>
         <el-col :span="personInfoSpan[2]">
           <div class="other-fun">
-            <label @click="sc">
+            <!-- <label @click="sc">
               <span class="iconfont icon-snapchat"></span>
-            </label>
+            </label> -->
             <label for="docFile">
               <span class="iconfont icon-wenjian"></span>
             </label>
@@ -98,7 +98,7 @@
           </div>
         </div>
       </div>
-      <div class="chatInputs">
+      <div class="chatInputs" v-show="inputsStatus">
         <!--表情-->
         <div class="emoji boxinput" @click="clickEmoji" v-show="buttonStatus">
           <img src="@/assets/img/emoji/smiling-face.png" alt="" />
@@ -121,6 +121,8 @@
           maxlength="2000" dir autocorrect="off" aria-autocomplete="both" spellcheck="false" autocapitalize="off"
           autocomplete="off" v-model="inputMsg" @keydown.shift.enter="newLine"  @keydown.enter.prevent
           placeholder="在此输入消息，Ctrl+Enter发送~"></textarea-->
+        <!--el-input type="textarea"  id="textareaMsg" ref="textInput" :autosize="{}"  class="textarea" v-model="inputMsg" maxlength="2000" style="margin-left: 2%;margin-top: 3px;min-height: 51px;max-height:400px;max-width: 80%;min-width: 45%;  height: auto;"  @keydown.enter.stop
+            @keydown.enter.shift.prevent="insertLineBreak" placeholder="在此输入您的提示词~"></el-input-->
         <!--发送-->
         <div>
           <div class="send boxinput" @click="sendText">
@@ -134,7 +136,7 @@
 
 <script>
 import { animation, getNowTime, JCMFormatDate } from "@/util/util";
-import { getChatMsg, getCompletion, getChatCompletion, createImage, createImageEdit, createImageVariations, createTranscription, createTranslation } from "@/api/getData";
+import { getChatMsg, getCompletion, getChatCompletion, createImage, createImageEdit, createImageVariations, createTranscription, createTranslation,createEmbeddings } from "@/api/getData";
 import HeadPortrait from "@/components/HeadPortrait";
 import Emoji from "@/components/Emoji";
 import FileCard from "@/components/FileCard.vue";
@@ -163,6 +165,8 @@ export default {
   },
   data() {
     return {
+      fileArrays:[],
+      inputsStatus:true,
       rows: 1,
       //是否显示表情和录音按钮
       buttonStatus: true,
@@ -183,6 +187,7 @@ export default {
     };
   },
   mounted() {
+    this.inputsStatus=this.settingInfo.inputStatus
   },
 
   created() {
@@ -194,6 +199,9 @@ export default {
     window.removeEventListener('resize', this.handleResize)
   },
   methods: {
+    updateInputsStatus(status){
+      this.inputsStatus=status;
+    },
     //监听窗口的变化
     handleResize() {
       if (window.innerWidth <= 700) {
@@ -326,8 +334,57 @@ export default {
       this.chatList.push(msgList);
       this.scrollBottom();
     },
+    // 在组件或页面外部声明计算余弦相似度的函数
+    cosineSimilarity(a, b) {
+      const dotProduct = a.reduce((acc, curr, i) => acc + curr * b[i], 0);
+      const normA = Math.sqrt(a.reduce((acc, curr) => acc + curr * curr, 0));
+      const normB = Math.sqrt(b.reduce((acc, curr) => acc + curr * curr, 0));
+      return dotProduct / (normA * normB);
+    },
     //发送文字信息
     sendText() {
+      // if(this.settingInfo.readefile){
+      //   console.log("看看能获取到不")
+      //   console.log(this.fileArrays)
+      //   const formData = new FormData();
+      //   formData.append("model", "text-embedding-ada-002");
+      //   formData.append("input", "吕世昊是谁?");
+      //   createEmbeddings(formData,this.settingInfo.KeyMsg).then(data => {
+      //     console.log("文本的地址")
+      //     const inputEmbedding=data.data[0]
+      //     // const similarText = this.findMostSimilarEmbedding(, this.fileArrays);
+
+      //     // 计算每个句子embedding与输入数据embedding之间的相似度
+      //     const similarities = this.cosineSimilarity(this.fileArrays.embedding, inputEmbedding.embedding)
+      //     const similaritiesArr=[];
+      //     console.log("測測")
+      //     console.log(similarities)
+      //     similaritiesArr.push(similarities)
+      //     // 对相似度进行排名，选择与输入数据最相似的句子或文章段落作为匹配结果
+      //     const topMatchIndex = similaritiesArr.reduce((maxIndex, similarity, index) => similarity > similaritiesArr[maxIndex] ? index : maxIndex, 0)
+          
+      //     console.log("你他吗是什么东西")
+      //     console.log(topMatchIndex)
+      //     const topMatchText = sentences[topMatchIndex]
+      //     console.log('最匹配的句子是：', topMatchText)
+      //     // console.log('最相似的文本为：', similarText);
+      //   })
+
+        
+      //   // const configuration = new Configuration({
+      //   //   apiKey:  ,
+      //   // });
+      //   // const openai = new OpenAIApi(configuration);
+      //   // const response = openai.embeddings({
+      //   //   model: 'text-embedding-ada-002',
+      //   //   input:"text"
+      //   // });
+      //   // console.log(response)
+
+      //   // alert("开启了")
+
+      //   return
+      // }
       this.rows = 1;
       // document.getElementById("textareaMsg").style.height = "26px";
       this.$nextTick(() => {
@@ -485,6 +542,7 @@ export default {
         await fetch(
           base.baseUrl + '/v1/chat/completions', {
           method: "POST",
+          timeout: 10000 ,
           body: JSON.stringify({
             ...params
           }),
@@ -523,6 +581,7 @@ export default {
               return readStream(reader);
             });
           }
+          _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + ":grinning:"
           readStream(reader);
           this.$nextTick(() => {
             this.acqStatus = true
@@ -544,16 +603,23 @@ export default {
         await fetch(
           base.baseUrl + '/v1/completions', {
           method: "POST",
+          timeout: 10000 ,
           body: JSON.stringify({
             ...params
           }),
           headers: {
             Authorization: 'Bearer ' + this.settingInfo.KeyMsg,
-            "Content-Type": "application/json",
-            Accept: "application/json",
+            "Content-Type": "application/json"
           },
         }
         ).then(response => {
+          if(response.status==404){
+            this.$message.error("模型已被删除或已取消...")
+            this.$nextTick(() => {
+              this.acqStatus = true
+            });
+            return
+          }
           const reader = response.body.getReader();
 
           function readStream(reader) {
@@ -581,16 +647,16 @@ export default {
           this.$nextTick(() => {
             this.acqStatus = true
           });
+          _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + ":grinning:"
           readStream(reader);
-        });
+        })
       } catch (error) {
-        console.error(error);
+        
       }
 
     },
     resetUpdate() {
       this.updateImage = null
-      alert("更新的文件已重置")
     },
     //获取窗口高度并滚动至最底层
     scrollBottom() {
@@ -633,7 +699,9 @@ export default {
           message: "请上传一个有效的PNG文件~",
           type: "warning",
         });
-        this.acqStatus = true
+        this.$nextTick(() => {
+          this.acqStatus = true
+        });
         return;
       }
 
@@ -643,7 +711,9 @@ export default {
           message: "请上传一个小于4MB的文件~",
           type: "warning",
         });
-        this.acqStatus = true
+        this.$nextTick(() => {
+          this.acqStatus = true
+        });
         return;
       }
 
@@ -654,7 +724,9 @@ export default {
           type: "info",
         });
         e.target.files = null;
-        this.acqStatus = true
+        this.$nextTick(() => {
+          this.acqStatus = true
+        });
         return
       }
       // 通过验证后，上传文件
@@ -707,8 +779,36 @@ export default {
       })
       e.target.files = null;
     },
+   
     //发送文件
     sendFile(e) {
+      // let file = e.target.files[0];
+      // let reader = new FileReader();
+      // reader.readAsText(file);
+      // let _this=this
+      // reader.onload = function(event) {
+      //   let text = event.target.result;
+      //   //处理文件数据
+      //   const delimiters = ['.', '?', '!', '\n',':',","];
+      //   let result = [];
+      //   for (let i = 0; i < text.length; i++) {
+      //     let current = '';
+      //     while (i < text.length && !delimiters.includes(text[i])) {
+      //       current += text[i];
+      //       i++;
+      //     }
+      //     // 加入句子，并去除前后空格
+      //     if (current.trim()) {
+      //       result.push(current.trim());
+      //     }
+      //   }
+      //   const formData = new FormData()
+      //   formData.append("model", "text-embedding-ada-002");
+      //   formData.append("input", result);
+      //   createEmbeddings(formData,_this.settingInfo.KeyMsg).then(data => {
+      //     _this.fileArrays = data.data[0]
+      //   })
+      // };  
       const dateNow = JCMFormatDate(getNowTime());
       let chatMsg = {
         headImg: USER_HEAD_IMG_URL,
@@ -780,7 +880,18 @@ export default {
 }
 } 
 
-
+pre {
+  background-color: #211f1f !important ;
+  border-radius: 20px !important;
+  box-shadow: 0px 0px 9px 0px #000000 !important;
+  color: #ffff !important;
+}
+.hljs{
+  background-color: #211f1f !important ;
+  border-radius: 20px !important;
+  box-shadow: 0px 0px 9px 0px #000000 !important;
+  color: #ffff !important;
+}
 textarea::-webkit-scrollbar {
   width: 3px;
   /* 设置滚动条宽度 */
@@ -863,19 +974,6 @@ textarea::-webkit-scrollbar-thumb {
 
 
   .textarea {
-    // width: 95%;
-    // height: 50px;
-    // background-color: rgb(66, 70, 86);
-    // border-radius: 15px;
-    // border: 2px solid rgb(34, 135, 225);
-    // padding: 10px;
-    // box-sizing: border-box;
-    // transition: 0.2s;
-    // font-size: 20px;
-    // color: #fff;
-    // font-weight: 100;
-    // margin: 0 20px;
-
     &:focus {
       outline: none;
     }
