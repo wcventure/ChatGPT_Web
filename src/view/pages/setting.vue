@@ -4,7 +4,7 @@
       <el-header>
         <transition name="el-zoom-in-top">
           <div v-show="show" class="transition-box">
-			<h2 style="color: aliceblue;">西安电子科技大学广州研究院</h2>
+            <h2 style="color: aliceblue;">西安电子科技大学广州研究院</h2>
             <h3 style="color: aliceblue;">智能化可信软件工程Lab</h3>
           </div>
         </transition>
