@@ -1,5 +1,5 @@
 {
-  "name": "chathome",
+  "name": "JCM-AI",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -14,12 +14,12 @@
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",
     "markdown-it-vue": "^1.1.7",
-    "mockjs": "^1.1.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
     "openai": "^3.2.1",
     "sass": "^1.60.0",
     "sass-loader": "^13.2.1",
     "vue": "^2.6.14",
+    "vue-i18n": "^8.28.2",
     "vue-router": "^3.6.5"
   },
   "devDependencies": {
