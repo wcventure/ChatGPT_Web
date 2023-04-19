@@ -1662,9 +1662,6 @@ input[type=number]::-webkit-outer-spin-button {
       }
     }
   }
-<<<<<<< HEAD
-}</style>
-=======
 }
 @media only screen and (min-width: 768px) { // 当屏幕宽度大于或等于768px时
   .chatHome {
@@ -1674,4 +1671,3 @@ input[type=number]::-webkit-outer-spin-button {
   }
 }
 </style>
->>>>>>> upstream/main
