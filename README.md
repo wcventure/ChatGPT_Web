@@ -1,26 +1,43 @@
+
+
+<div align=center>
+  <img src="https://i.328888.xyz/2023/04/09/icPI3N.png"   />
+</div>
 <a href="https://github.com/202252197">
   <img width=800 src="https://github-profile-trophy.vercel.app/?username=202252197&column=7&theme=gruvbox&no-frame=true"/>
 </a>
-
-# OpenAI Manage Web
+<div>
 声明：此项目只发布于 GitHub，基于 BSD-3-Clause license 协议，免费且作为开源学习使用。并且不会有任何形式的卖号、付费服务、卖key等行为。谨防受骗。
 项目使用Vue2进行开发，给大家提供一个方便使用的OpenAI web 管理界面，有好的建议和bug欢迎大家提出来，项目会一直开源和代码优化，方便对openai进行入门了解使用，后期会接入后端，实现更丰富的功能。
+</div>
 
 > 🤭记得点个小星星Starred
 
 ## 会话
-![webui4.5](https://i.328888.xyz/2023/04/07/iNgA7o.jpeg)
+![webui4.5](https://i.328888.xyz/2023/04/09/icM7uP.png)
 ## 模型
-![webui4.5](https://i.328888.xyz/2023/04/07/iNg0yq.jpeg)
+![webui4.5](https://i.328888.xyz/2023/04/09/icMKez.png)
 ## 微调模型
-![webui4.5](https://i.328888.xyz/2023/04/07/iNgVGJ.jpeg)
+![webui4.5](https://i.328888.xyz/2023/04/09/icM9Zb.png)
 ## 文件
-![webui4.5](https://i.328888.xyz/2023/04/07/iNgtmd.jpeg)
+![webui4.5](https://i.328888.xyz/2023/04/09/icMdBA.png)
+## 多种prompt角色
+![webui4.5](https://i.328888.xyz/2023/04/09/icMO4p.png)
+## 中英文切换
+![webui4.5](https://i.328888.xyz/2023/04/09/icMLaw.png)
+## 适配手机&平板
+<div>
+  <img src="https://i.328888.xyz/2023/04/09/icMzet.png" alt="drawing" width="270px" />
+  <img src="https://i.328888.xyz/2023/04/09/icMeHX.png" alt="drawing" width="280px"/>
+  <img src="https://i.328888.xyz/2023/04/09/icMGkc.png" alt="drawing" width="270px" />
+</div>
+<div>
+  <img src="https://i.328888.xyz/2023/04/09/icMh9o.png" alt="drawing" />
+</div>
 
+## 应用程序（2K的Star再更新）
 
 # 部署步骤
-
-## 应用程序（暂时不再提供，只提供给赞助者）
 
 ## 参考视频
 https://www.bilibili.com/video/BV1iL411k7pC  本地和云服务器部署视频
@@ -32,9 +49,13 @@ npm run serve
 npm run build
 ```
  
- # 在线免费体验地址
- #注意请不要恶意使用，否则以后都不再更新，每两天更新一下，给粉丝们免费使用
- http://www.multimode-chatgpt.top/#/ChatHome
+ # 在线体验地址 (需要使用自己的OpenAI KEY)
+
+ > https://huggingface.co/spaces/junchenmo/OpenAI-Manager
+ 
+# 国内在线体验地址 (没kx再或者没有KEY--省点用)
+
+> https://175.178.88.119/learn.html
 
 ## OpenAI-Key设置以及自定义设置
 ### 在.env.serve中添加代码
@@ -99,24 +120,28 @@ docker run --name my-chatgpt -p 80:80 jcm-chatgpt
 | 导出导入数据   | 支持导出当前会话，导出全部会话，导入当前会话，导出当前会话，清除当前会话，清除全部会话 |
 | 聊天截图到本地图片    | 截图功能，有缺陷只能截图当前窗口的图片，建议QQ长截图（暂时取消） |
 | 更换聊天窗口背景    | 支持输入背景图片URL，暂时取消并保留此功能，没太大意义（暂时取消） |
+| 角色扮演    | 内置多角色prompt |
+| 界面多语言    | 支持中英文语言 |
 | 更换主题    | 待开发 |
-| 界面多语言    | 待开发 |
 | 增加后端实现更多功能    | 待开发 |
 | More    | 待开发 |
 
-## Star History
-[![Star History Chart](https://api.star-history.com/svg?repos=202252197/ChatGPT_JCM&type=Timeline)](https://star-history.com/#202252197/ChatGPT_JCM&Timeline)
-
-# 赞助
-开源不易，有需要我帮助可以赞助一下(多少无所谓，看项目对大家有多大帮助🤭)
+# 贡献者
 <div>
-  <img src="https://i.328888.xyz/2023/04/02/iHlzxb.jpeg" alt="drawing" width="300px" height="300px"/>
-  <img src="https://i.328888.xyz/2023/04/02/iHldcw.jpeg" alt="drawing" width="300px" height="300px"/>
+  <a href="https://github.com/202252197/ChatGPT_JCM/graphs/contributors">
+    <img src="https://contrib.rocks/image?repo=202252197/ChatGPT_JCM" />
+  </a>
 </div>
+
+
+# 进学习群加V
 <div>
-  加一下V联系我，不解决其他项目问题，只针对本项目进行优化增加功能，可以进入技术交流群。
+  发广告秒踢，不解决其他项目问题，只针对本项目进行优化增加功能
   <img src="https://i.328888.xyz/2023/04/03/iHKA4H.jpeg" alt="drawing" width="300px" height="300px"/>
 </div>
+
+## Star History
+[![Star History Chart](https://api.star-history.com/svg?repos=202252197/ChatGPT_JCM&type=Timeline)](https://star-history.com/#202252197/ChatGPT_JCM&Timeline)
 
 # 免责声明
 这不是官方的OpenAI产品。这是一个个人项目，与OpenAI没有任何关系。不要起诉我。

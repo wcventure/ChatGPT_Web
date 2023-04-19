@@ -2,18 +2,6 @@
   <div class="chatHome">
     <div class="chatLeft" style="width:20%" v-show="showPersonList">
       <div class="title" style="text-align: center;">
-        <!--svg t="1679634305168" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
-          p-id="3634" width="40" height="40">
-          <path
-            d="M512 960.4c-23.2 0-46.5-6-67.2-17.9L173.5 785.8c-41.4-23.9-67.2-68.5-67.2-116.3V356.1c0-47.8 25.7-92.4 67.2-116.3L444.8 83.1c41.4-23.9 92.9-23.9 134.3 0l271.4 156.7c41.4 23.9 67.2 68.5 67.2 116.3v313.4c0 47.8-25.7 92.4-67.2 116.3L579.2 942.5c-20.7 11.9-44 17.9-67.2 17.9z m0-805.6c-7.7 0-15.4 2-22.3 6L218.3 317.5c-13.8 7.9-22.3 22.7-22.3 38.6v313.4c0 15.9 8.5 30.7 22.3 38.6l271.4 156.7c13.8 7.9 30.8 7.9 44.6 0l271.4-156.7c13.8-7.9 22.3-22.7 22.3-38.6V356.1c0-15.9-8.5-30.7-22.3-38.6L534.3 160.8c-6.9-4-14.6-6-22.3-6z"
-            fill="#ffffff" p-id="3635"></path>
-          <path
-            d="M514 559c-7.8 0-15.5-2-22.4-6L270.9 425.4c-21.5-12.4-28.8-39.8-16.4-61.3 12.4-21.5 39.8-28.8 61.3-16.4l198.1 114.5 189.7-110.9c21.4-12.5 48.9-5.3 61.4 16.1 12.5 21.4 5.3 48.9-16.1 61.4l-212.2 124c-7 4.1-14.9 6.2-22.7 6.2z"
-            fill="#ffffff" p-id="3636"></path>
-          <path
-            d="M512 805.8c-24.8 0-44.9-20.1-44.9-44.9V514.1c0-24.8 20.1-44.9 44.9-44.9s44.9 20.1 44.9 44.9V761c0 24.7-20.1 44.8-44.9 44.8z"
-            fill="#ffffff" p-id="3637"></path>
-        </svg-->
         <h3>智能化可信软件工程实验室</h3>
         <h3>AI Manage</h3>
       </div>
@@ -21,7 +9,8 @@
         <el-row :gutter="24">
           <el-col :span="6">
             <div class="setting" style="text-align: center;">
-              <span class="" @click="sessionClick" :class="{ whiteText: cutSetting === 1 }">{{ $t('session.title') }}</span>
+              <span class="" @click="sessionClick" :class="{ whiteText: cutSetting === 1 }">{{ $t('session.title')
+              }}</span>
             </div>
           </el-col>
           <el-col :span="6">
@@ -31,8 +20,8 @@
           </el-col>
           <el-col :span="6">
             <div class="setting" style="text-align: center;">
-              <span class="" @click="fineTuningClick"
-                :class="{ whiteText: cutSetting === 2 }">{{ $t('slightly.title.whole') }}</span>
+              <span class="" @click="fineTuningClick" :class="{ whiteText: cutSetting === 2 }">{{
+                $t('slightly.title.whole') }}</span>
             </div>
           </el-col>
           <el-col :span="6">
@@ -148,9 +137,10 @@
 
       <el-card shadow="hover" id="jianbian" style="line-height: 120%;text-align: center;">
         <div>
-            <input class="inputs" v-model="SettingInfo.KeyMsg" :placeholder="$t('placeholder.openai_key')" type="password"
-              style="width: 100%; margin-left: 0px;margin-right: 0px;" />
-          </div>
+          <input class="inputs" v-model="SettingInfo.KeyMsg" :placeholder="$t('placeholder.openai_key')" type="password"
+            auto-complete="new-password" autocomplete="new-password"
+            style="width: 100%; margin-left: 0px;margin-right: 0px;" />
+        </div>
       </el-card>
 
       <div class="online-person">
@@ -162,13 +152,19 @@
 
         <div class="s-wrapper" style="height: 75vh;">
 
-         
+
           <!--对话设置-->
           <el-collapse-transition>
             <div v-show="SettingStatus == 0">
 
 
               <div class="block" v-show="SettingInfo.openNet">
+                <div class="block">
+                  <el-tooltip class="item" effect="dark" :content="$t('model.online')" placement="top">
+                    <span class="demonstration">{{ $t('model.online_title') }}</span>
+                  </el-tooltip>
+                  <el-switch v-model="SettingInfo.openNet" :width="defaulWidth" style="margin-left: 15%;"></el-switch>
+                </div>
                 <el-tooltip class="item" effect="dark" :content="$t('model.max_results_title')" placement="top">
                   <span class="demonstration" style="">{{ $t('model.max_results') }}</span>
                 </el-tooltip>
@@ -378,6 +374,7 @@
                 {{ $t('slightly.showCanceledFineTuning') }}
               </div>
               <div class="fineTune boxinput" @click="deleteFine" style="margin-left: 0px;margin-right: 0px;width: 99%;">
+                <span class="iconfont icon-shanchu" style="color: #fff; margin-right:10px;"></span>
                 {{ $t('slightly.deleteFineTuningModel') }}
               </div>
               <div class="fineTune boxinput" @click="showFineSetting = !showFineSetting"
@@ -524,6 +521,7 @@
                 {{ $t('file.upload') }}
               </div>
               <div class="fineTune boxinput" @click="deleteOnFile" style="margin-left: 0px;margin-right: 0px;width: 99%;">
+                <span class="iconfont icon-shanchu" style="color: #fff; margin-right:10px;"></span>
                 {{ $t('file.delete') }}
               </div>
               <div class="fineTune boxinput" @click="retrieveOnFile"
@@ -568,7 +566,8 @@
                 {{ $t('session.export') }}
               </div>
               <div class="session boxinput" @click="importFromJsonArrAll">
-                <span class="iconfont icon-daoru" style="color: #fff; margin-right:10px;"></span> {{ $t('session.import') }}
+                <span class="iconfont icon-daoru" style="color: #fff; margin-right:10px;"></span> {{ $t('session.import')
+                }}
                 <input type="file" ref="onupdateJosnArrAll" @change="handleFileUploadAll" style="display: none;">
               </div>
               <div class="session boxinput" @click="clearAllContext">
@@ -581,6 +580,12 @@
           <!--角色-->
           <el-collapse-transition>
             <div v-show="SettingStatus == 6">
+              <div class="block">
+                <input class="weitiao" v-model="roleSearch" :placeholder="$t('placeholder.role_name')" />
+              </div>
+              <div class="personList" v-for="roleInfo in roleList" :key="roleInfo.act" @click="roleClick(roleInfo)">
+                <RoleCard :roleInfo="roleInfo" :prCurrent="prCurrent"></RoleCard>
+              </div>
 
             </div>
           </el-collapse-transition>
@@ -597,19 +602,7 @@
               </div> -->
               <div class="session boxinput" @click="changeLanguage"
                 style="margin-left: 0px;margin-right: 0px;width: 99%;">
-                <label>
-                  <span class="iconfont">
-                    <svg t="1680840158581" class="icon" viewBox="0 0 1024 1024" version="1.1"
-                      xmlns="http://www.w3.org/2000/svg" p-id="5743" id="mx_n_1680840158585" width="25" height="25">
-                      <path
-                        d="M424.7 343.4H386c-1.1 0-2 0.9-2 2v81.3c0 1.1 0.9 2 2 2h38.7c1.1 0 2-0.9 2-2v-81.3c0-1.1-0.9-2-2-2zM296.7 343.4H258c-1.1 0-2 0.9-2 2v81.3c0 1.1 0.9 2 2 2h38.7c1.1 0 2-0.9 2-2v-81.3c0-1.1-0.9-2-2-2z"
-                        fill="#76798a" p-id="5744"></path>
-                      <path
-                        d="M896 130H128c-23.6 0-42.7 19.1-42.7 42.7v682.7c0 23.6 19.1 42.7 42.7 42.7h768c23.6 0 42.7-19.1 42.7-42.7V172.7c0-23.6-19.1-42.7-42.7-42.7zM170.6 471.4V300.7c0-23.5 19.2-42.7 42.7-42.7h85.3c0-23.5 19.2-42.7 42.7-42.7S384 234.5 384 258h85.3c23.5 0 42.7 19.2 42.7 42.7v170.6c0 23.5-19.2 42.7-42.7 42.7H384v42.8c0 23.5-19.2 42.7-42.7 42.7s-42.7-19.2-42.7-42.7v-42.7h-85.3c-23.5 0-42.7-19.2-42.7-42.7zM512 791.3c-93.1 0-179.6-46.3-231.1-124-6.5-9.7-3.8-23 6-29.5 9.7-6.5 23-3.9 29.5 6 43.7 65.7 116.8 104.9 195.6 104.9 11.8 0 21.3 9.5 21.3 21.3s-9.5 21.3-21.3 21.3z m65.3-525.8c3.9-11.1 16.2-16.9 27.2-13 56.3 19.9 105.6 58.3 138.7 108.2 6.5 9.7 3.8 23-6 29.5-3.6 2.4-7.7 3.6-11.8 3.6-6.9 0-13.7-3.3-17.8-9.5-28.1-42.2-69.8-74.8-117.3-91.6-11.1-3.9-16.9-16.1-13-27.2z m233.4 547.2H640c-23.5 0-42.7-19.2-42.7-42.7V471.5c0-23.5 19.2-42.7 42.7-42.7h169.9c23.8 0 43.7 19.4 43.4 43.2-0.4 23.2-19.4 42.1-42.7 42.1h-126c-1.1 0-2 0.9-2 2v60c0 1.1 0.9 2 2 2h126c23.3 0 42.4 18.9 42.7 42.1 0.4 23.7-19.6 43.2-43.4 43.2H684.7c-1.1 0-2 0.9-2 2v60c0 1.1 0.9 2 2 2h125.2c23.8 0 43.8 19.4 43.5 43.2-0.4 23.2-19.4 42.1-42.7 42.1z"
-                        fill="#76798a" p-id="5745"></path>
-                    </svg>
-                  </span>
-                </label>
+                <span class="iconfont icon-iconyuanbanben_fanyi" style="color: #fff; margin-right:10px;"></span>
                 {{ $t('setting.Language') }}
               </div>
 
@@ -628,13 +621,15 @@ import Session from "@/components/Session.vue";
 import File from "@/components/File.vue";
 import ChatWindow from "./chatwindow.vue";
 import { AI_HEAD_IMG_URL } from '@/store/mutation-types'
-import { getModels, getMoneyInfo, getFineTunesList, getFilesList, uploadFile, createFineTune, cancelFineTune, deleteFineTuneModel, retrieveFineTune, deleteFile, retrieveFile, retrieveFileContent } from "@/api/getData";
+import RoleCard from "@/components/RoleCard.vue";
+import { getModels, getMoneyInfo, getFineTunesList, getFilesList, uploadFile, createFineTune, cancelFineTune, deleteFineTuneModel, retrieveFineTune, deleteFile, retrieveFile, retrieveFileContent, getRoles } from "@/api/getData";
 
 import { getNowTime, JCMFormatDate, JCMFormatTimestamp } from "@/util/util";
 const { Configuration, OpenAIApi } = require("openai");
 export default {
   name: "App",
   components: {
+    RoleCard,
     PersonCard,
     ChatWindow,
     Session,
@@ -662,6 +657,7 @@ export default {
       batch_sizeStr: "",
       //全部的设置参数
       SettingInfo: {
+        cutSetting : 1,
         KeyMsg: process.env.VUE_APP_OPENAI_API_KEY,
         readefile: false,
         inputStatus: true,
@@ -702,6 +698,8 @@ export default {
       fiCurrent: "",
       //当前点击的模型
       pcCurrent: "",
+      //当前点击的角色
+      prCurrent: "",
       //当前点击的会话
       sessionCurrent: "",
       //当前点击的微调模型
@@ -710,6 +708,8 @@ export default {
       fineTuningSearch: "",
       //模型搜索数据
       modelSearch: "",
+      //角色搜索数据
+      roleSearch: "",
       //文件列表
       fileList: [],
       //文件缓存列表
@@ -722,6 +722,8 @@ export default {
       personList: [],
       //会话列表
       sessionList: [],
+      //角色列表
+      roleList: [],
       //模型列表缓存
       personListCache: [],
       //是否显示聊天窗口
@@ -752,6 +754,8 @@ export default {
       showPersonList: true,
       showSetupList: true,
       showMainContent: true,
+      firstSize: true,
+      width: 0
     };
   },
   computed: {
@@ -789,6 +793,7 @@ export default {
     if (this.SettingInfo.KeyMsg) {
       this.getModelList(this.SettingInfo.KeyMsg);
     }
+    this.getRolesList();
     this.$watch('fileSearch', this.watchFileSearch);
   },
   filters: {
@@ -831,6 +836,15 @@ export default {
           this.fileList = this.fileCacheList.filter(fileList => fileList.id.includes(newVal))
         } else {
           this.fileList = this.fileCacheList
+        }
+      }
+    },
+    roleSearch: {
+      handler: function (newVal, oldVal) {
+        if (this.roleList) {
+          this.roleList = this.roleCacheList.filter(fileList => fileList.act.toLowerCase().includes(newVal.toLowerCase()))
+        } else {
+          this.roleList = this.roleCacheList
         }
       }
     },
@@ -922,10 +936,11 @@ export default {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       if (isMobile && (this.showPersonList || this.showSetupList)) {
         this.showMainContent = false;
+        this.showSetupList = !this.showPersonList;
         document.querySelectorAll('.chatLeft')[0].style.width = '100%';
       } else {
         this.showMainContent = true;
-        document.querySelectorAll('.chatLeft')[0].style.width = '22%';
+        document.querySelectorAll('.chatLeft')[0].style.width = '20%';
       }
     },
     toggleRight() {
@@ -934,10 +949,11 @@ export default {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
       if (isMobile && (this.showPersonList || this.showSetupList)) {
         this.showMainContent = false;
+        this.showPersonList = !this.showSetupList;
         document.querySelectorAll('.chatLeft')[1].style.width = '100%';
       } else {
         this.showMainContent = true;
-        document.querySelectorAll('.chatLeft')[1].style.width = '22%';
+        document.querySelectorAll('.chatLeft')[1].style.width = '20%';
       }
     },
     //获取模型列表
@@ -977,8 +993,17 @@ export default {
         this.$message.error(this.$t('message.get_files_fail'))
       })
     },
-    //监听窗口尺寸的变化
-    handleResize() {
+    //获取角色列表
+    getRolesList() {
+      getRoles().then((res) => {
+        let data = res.data
+        this.roleList = data
+        this.roleCacheList = data
+      }).catch(e => {
+        this.$message.error(this.$t('message.get_roles_fail'))
+      })
+    },
+    resize(){
       if (window.innerWidth <= 1150) {
         this.showPersonList = false;
         this.showSetupList = false;
@@ -997,18 +1022,20 @@ export default {
       } else {
         this.showPersonList = true;
         this.showSetupList = true;
-      };
+      }
     },
-    // // 更新当前余额
-    // updateMoneyInfo() {
-    //   getMoneyInfo(this.SettingInfo.KeyMsg).then((res) => {
-    //     this.$nextTick(() => {
-    //       this.moneryInfo.totalGranted = res.total_granted;
-    //       this.moneryInfo.totalUsed = res.total_used;
-    //       this.moneryInfo.totalAvailable = res.total_available;
-    //     })
-    //   })
-    // },
+    //监听窗口尺寸的变化
+    handleResize() {
+      if ( this.firstSize ){
+        this.resize();
+        this.firstSize = false;
+        this.width = window.innerWidth;
+      }
+      if ( this.width != window.innerWidth ){
+        this.resize();
+        this.width = window.innerWidth;
+      }
+    },
     //创建会话
     newSession() {
       //获取当前会话长度
@@ -1050,6 +1077,7 @@ export default {
       this.fineTuningInfo = {};
       this.SettingStatus = 0
       this.cutSetting = 0
+      this.SettingInfo.cutSetting = 0
       // this.showChatWindow = false;
     },
     //会话列表被点击
@@ -1058,6 +1086,7 @@ export default {
       this.clearCurrent()
       this.SettingStatus = 5
       this.cutSetting = 1
+      this.SettingInfo.cutSetting = 1
       this.chatWindowInfo = {
         img: "",
         name: "ChatGPT",
@@ -1069,11 +1098,25 @@ export default {
       }
       // this.showChatWindow = true;
     },
+    //角色列表被点击
+    roleClick(info) {
+      if (!this.showChatWindow) {
+        this.$message({
+          message: "请选一个模型",
+          type: "error",
+        });
+      } else {
+        var chatWindow = this.$refs.chatWindow;
+        chatWindow.inputMsg = info.prompt;
+      }
+
+    },
     //微调模型列表被点击
     fineTuningClick() {
       this.clearCurrent()
       this.SettingStatus = 3;
       this.cutSetting = 2
+      this.SettingInfo.cutSetting = 2
       // this.showChatWindow = false;
       //获取微调模型列表
       this.getFineTunessList(this.SettingInfo.KeyMsg)
@@ -1095,6 +1138,7 @@ export default {
       this.fineTuningInfo = {};
       this.SettingStatus = 4;
       this.cutSetting = 3
+      this.SettingInfo.cutSetting = 3
       //获取微调模型列表
       this.getFilessList(this.SettingInfo.KeyMsg)
     },
@@ -1331,7 +1375,7 @@ export default {
       }
     },
     personCardSort(id) {
-      if (id !== this.personList[0].id) {
+      if (typeof this.personList[0] != 'undefined' && id !== this.personList[0].id) {
         console.log(id);
         let nowPersonInfo;
         for (let i = 0; i < this.personList.length; i++) {
@@ -1565,7 +1609,7 @@ input[type=number]::-webkit-outer-spin-button {
   display: flex;
 
   .chatLeft {
-    width: 17%;
+    width: 20%;
 
     .title {
       color: #fff;
@@ -1601,7 +1645,7 @@ input[type=number]::-webkit-outer-spin-button {
 
   .chatRight {
     flex: 1;
-    padding-right: 30px;
+    padding-right: 0px;
 
     .showIcon {
       position: absolute;
@@ -1618,4 +1662,16 @@ input[type=number]::-webkit-outer-spin-button {
       }
     }
   }
+<<<<<<< HEAD
 }</style>
+=======
+}
+@media only screen and (min-width: 768px) { // 当屏幕宽度大于或等于768px时
+  .chatHome {
+    .chatRight {
+      padding-right: 30px;
+    }
+  }
+}
+</style>
+>>>>>>> upstream/main

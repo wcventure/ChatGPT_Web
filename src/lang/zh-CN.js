@@ -1,7 +1,8 @@
 export default {
     placeholder: {
-        question: "输入您的问题~",
+        question: "在此输入您的问题~",
         openai_key: "请输入OpenAI KEY",
+        role_name: "角色名称",
         session_name: "会话名称",
         model_name: "模型名称",
         slightly_name: "微调模型名称",
@@ -20,9 +21,9 @@ export default {
     session: {
         title: "会话",
         create: "创建会话",
-        export: "导出会话",
-        import: "导入会话",
-        clear: "清除会话"
+        export: "导出会话列表",
+        import: "导入会话列表",
+        clear: "清除会话列表"
     },
     model: {
         title: "模型",
@@ -77,7 +78,7 @@ export default {
         title: "文件",
         upload: "上传文件",
         delete: "删除文件",
-        retrieve: "删除文件",
+        retrieve: "检索文件",
         view: "查看文件内容"
     },
     image: {
@@ -148,7 +149,8 @@ export default {
         cancel_fail: "取消微调模型失败~",
         only_model: "只能检索的微调模型哦~",
         verify_model_fail: "检索微调模型失败~",
-        get_files_fail:"获取文件列表失败哦~"
+        get_files_fail:"获取文件列表失败哦~",
+        get_roles_fail:"获取角色列表失败哦~",
     },
     index: {
         detail: "chatgpt v3.5 所基于的模型",

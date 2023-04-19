@@ -128,12 +128,8 @@
         </div>
         <!--输入框-->
         <textarea id="textareaMsg" ref="textInput" :autosize="{}"  class="inputs" v-model="inputMsg" maxlength="3000" style="margin-left: 2%;margin-top: 3px;min-height: 51px;max-height:300px;max-width: 80%;min-width: 45%;  height: auto;" @keyup.shift.enter="newLine" :rows="rows" @keyup.ctrl.enter="sendText" placeholder="在此输入消息，Ctrl+Enter发送~" ></textarea>
-        <!--el-input type="textarea" id="textareaMsg" ref="textInput" :autosize="{}" class="textarea" v-model="inputMsg"
-          maxlength="2048"
-          style="margin-left: 2%;margin-top: 3px;min-height: 51px;max-height:400px;max-width: 80%;min-width: 45%;  height: auto;"
-          @keydown.enter.stop @keydown.enter.shift.prevent="insertLineBreak"
-          :placeholder="$t('placeholder.question')"></el-input-->
-        <!--发送-->
+          <!--textarea id="textareaMsg"  :placeholder="$t('placeholder.question')" class="inputs" v-autoheight style="z-index: 9999999999;min-height: 50px;max-height:400px;max-width: 100%;min-width: 45%;"    maxlength="2048" rows="3" dir autocorrect="off" aria-autocomplete="both" spellcheck="false" autocapitalize="off" autocomplete="off" v-model="inputMsg" @keyup.enter="handleKeyDown"  ></textarea-->
+          <!--发送-->
         <div>
           <div class="send boxinput" @click="sendText">
             <img src="@/assets/img/emoji/rocket.png" alt="" />
@@ -157,6 +153,27 @@ import { AI_HEAD_IMG_URL, USER_HEAD_IMG_URL, USER_NAME } from '@/store/mutation-
 import { saveAs } from 'file-saver';
 
 export default {
+  directives: {
+      //用于自适应文本框的高度
+    autoheight: {
+      inserted: function (el) {
+        var Msg = document.getElementById("textareaMsg").value;
+        if (Msg == ""){
+          el.style.height = "26px"
+        }else{
+          el.style.height = el.scrollHeight + 'px'
+        }
+      },
+      update: function (el) {
+        var Msg = document.getElementById("textareaMsg").value;
+        if (Msg == ""){
+          el.style.height = "26px"
+        }else{
+          el.style.height = el.scrollHeight + 'px'
+        }
+      }
+    }
+  },
   components: {
     HeadPortrait,
     Emoji,
@@ -208,6 +225,56 @@ export default {
     window.removeEventListener('resize', this.handleResize)
   },
   methods: {
+    handleKeyDown(event) {
+      if (event.keyCode === 13 && (!event.shiftKey)) {  // 按下回车键，没按shift
+        this.sendText()
+      }
+    },
+    readStream(reader,_this, currentResLocation,type) {
+        return reader.read().then(({ done, value }) => {
+          if ( done ) {
+            return;
+          }
+          if (!_this.chatList[currentResLocation].reminder) {
+            _this.chatList[currentResLocation].reminder = "";
+          }
+          let decoded = new TextDecoder().decode(value);
+          decoded = _this.chatList[currentResLocation].reminder + decoded;
+          let decodedArray = decoded.split("data: ");
+          let longstr = "";
+          decodedArray.forEach(decoded => {
+            try {
+              decoded = decoded.trim();
+              if ( longstr == "" ){
+                JSON.parse(decoded);
+              }else{
+                decoded = longstr + decoded;
+                longstr = "";
+                JSON.parse(decoded);
+              }
+            }catch ( e ){
+              longstr = decoded;
+              decoded = "";
+            }
+            if(decoded!==""){
+              if(decoded.trim()==="[DONE]"){
+                return;
+              }else{
+                console.log(type)
+                if(type==="chat"){
+                  const response = JSON.parse(decoded).choices[0].delta.content ? JSON.parse(decoded).choices[0].delta.content : "";
+                  _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + response
+                  _this.scrollBottom();
+                }else{
+                  const response = JSON.parse(decoded).choices[0].text;
+                  _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + response
+                }
+              }
+            }
+          })
+          return this.readStream(reader,_this, currentResLocation,type);
+        });
+      },
     //导入当前内容json触发的方法
     importFromJsonArr() {
       this.$refs.onupdateJosnArr.click(); // 触发选择文件的弹框
@@ -390,7 +457,6 @@ export default {
       //   return
       // }
       this.rows = 1;
-      // document.getElementById("textareaMsg").style.height = "26px";
       this.$nextTick(() => {
         this.acqStatus = false
       })
@@ -487,14 +553,14 @@ export default {
         } else {
           //如果是文字模式则进入
           params.model = this.frinedInfo.id,
-            params.max_tokens = this.settingInfo.chat.MaxTokens,
-            params.temperature = this.settingInfo.chat.Temperature,
-            params.top_p = this.settingInfo.chat.TopP,
-            params.n = this.settingInfo.chat.n,
-            params.stream = this.settingInfo.chat.stream,
-            params.stop = this.settingInfo.chat.stop,
-            params.presence_penalty = this.settingInfo.chat.PresencePenalty,
-            params.frequency_penalty = this.settingInfo.chat.FrequencyPenalty
+          params.max_tokens = this.settingInfo.chat.MaxTokens,
+          params.temperature = this.settingInfo.chat.Temperature,
+          params.top_p = this.settingInfo.chat.TopP,
+          params.n = this.settingInfo.chat.n,
+          params.stream = this.settingInfo.chat.stream,
+          params.stop = this.settingInfo.chat.stop,
+          params.presence_penalty = this.settingInfo.chat.PresencePenalty,
+          params.frequency_penalty = this.settingInfo.chat.FrequencyPenalty
 
           let chatBeforResMsg = {
             headImg: AI_HEAD_IMG_URL,
@@ -507,7 +573,19 @@ export default {
           if (this.frinedInfo.id === "gpt-3.5-turbo" || this.frinedInfo.id === "gpt-3.5-turbo-0301") {
             this.chatCompletion(params, chatBeforResMsg)
           } else {
-            this.completion(params, chatBeforResMsg)
+            if(this.settingInfo.cutSetting===0){
+              if(this.frinedInfo.id === "text-davinci-003" ){
+                this.completion(params, chatBeforResMsg)
+              }else{
+                this.$message.error("暂时不支持gpt-3.5-turbo、gpt-3.5-turbo-0301、text-davinci-003以外的模型聊天~")
+                this.$nextTick(() => {
+                  this.acqStatus = true
+                })
+              }
+            }else{
+              this.completion(params, chatBeforResMsg)
+            }
+          
           }
         }
         if (this.storeStatu == 0) {
@@ -577,9 +655,6 @@ export default {
               })
 
               itemContent.msg = noUrlNetMessage;
-              this.$nextTick(() => {
-                this.acqStatus = true
-              });
             });
       } else {
         let conversation = this.contextualAssemblyData();
@@ -589,70 +664,63 @@ export default {
             content: item.text
           }
         })
-        params.stream = true
+      }
         //新增一个空的消息
         this.sendMsg(chatBeforResMsg);
 
         const currentResLocation = this.chatList.length - 1
         let _this = this
-        try {
-          await fetch(
-            base.baseUrl + '/v1/chat/completions', {
-            method: "POST",
-            timeout: 10000,
-            body: JSON.stringify({
-              ...params
-            }),
-            headers: {
-              Authorization: 'Bearer ' + this.settingInfo.KeyMsg,
-              "Content-Type": "application/json"
-            },
-          }
-          ).then(response => {
-            this.isAutoScroll = true;
-            const reader = response.body.getReader();
-            function readStream(reader) {
-              return reader.read().then(({ done, value }) => {
-                if (done) {
-                  return;
+         try {
+            if ( this.settingInfo.chat.stream ){
+              await fetch(
+                base.baseUrl+'/v1/chat/completions',{
+                  method: "POST",
+                  body: JSON.stringify({
+                      ...params
+                  }),
+                  headers: {
+                      Authorization: 'Bearer ' + this.settingInfo.KeyMsg,
+                      "Content-Type": "application/json",
+                      Accept: "application/json",
+                  },
                 }
-                if (!_this.chatList[currentResLocation].reminder) {
-                  _this.chatList[currentResLocation].reminder = "";
-                }
-
-                let decoded = new TextDecoder().decode(value);
-                if (params.stream) {
-                  decoded = _this.chatList[currentResLocation].reminder + decoded;
-                  let decodedArray = decoded.split("data: ");
-
-                  decodedArray.forEach(decoded => {
-                    if (decoded !== "") {
-                      if (decoded.trim() === "[DONE]") {
-                        return;
-                      } else {
-                        const response = JSON.parse(decoded).choices[0].delta.content ? JSON.parse(decoded).choices[0].delta.content : "";
-                        _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + response
-                        _this.scrollBottom();
-                      }
-                    }
-                  });
-                  return readStream(reader);
-                } else {
-                  _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + JSON.parse(decoded).choices[0].message.content
-                }
-
-              });
-            }
-            // _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + ":grinning:"
-            readStream(reader);
-            this.$nextTick(() => {
-              this.acqStatus = true
+            ).then(response=>{
+                const reader = response.body.getReader();
+                this.readStream(reader,_this, currentResLocation,"chat");
             });
-          });
+        }else{
+          await fetch(
+            base.baseUrl+'/v1/chat/completions',{
+              method: "POST",
+              body: JSON.stringify({
+                ...params
+              }),
+              headers: {
+                Authorization: 'Bearer ' + this.settingInfo.KeyMsg,
+                "Content-Type": "application/json",
+                Accept: "application/json",
+              },
+            }
+          ).then(response => response.json())
+            .then(
+              data => {
+                const content = data.choices[0].message.content; // 获取"content"字段的值
+                let decodedArray = content.split("");
+                decodedArray.forEach(decoded => {
+                  _this.chatList[currentResLocation].msg=_this.chatList[currentResLocation].msg+decoded
+                });
+              }
+            )
+          }
         } catch (error) {
+          const content ="网络不稳定或key余额不足，请重试或更换key"; // 获取"content"字段的值
+          let decodedArray = content.split("");
+          decodedArray.forEach(decoded => {
+              _this.chatList[currentResLocation].msg=_this.chatList[currentResLocation].msg+decoded
+          });
           console.error(error);
         }
-      }
+        this.acqStatus = true;
     },
     async completion(params, chatBeforResMsg) {
       if (this.settingInfo.chat.suffix !== "") {
@@ -686,37 +754,11 @@ export default {
             return
           }
           const reader = response.body.getReader();
-
-          function readStream(reader) {
-            return reader.read().then(({ done, value }) => {
-              if (done) {
-                return;
-              }
-              let decodeds = new TextDecoder().decode(value);
-              if (params.stream) {
-                let decodedArray = decodeds.split("data: ")
-
-                decodedArray.forEach(decoded => {
-                  if (decoded !== "") {
-                    if (decoded.trim() === "[DONE]") {
-                      return;
-                    } else {
-                      const response = JSON.parse(decoded).choices[0].text;
-                      _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + response
-                    }
-                  }
-                });
-                return readStream(reader);
-              } else {
-                _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + JSON.parse(decodeds).choices[0].text
-              }
-            });
-          }
           this.$nextTick(() => {
             this.acqStatus = true
           });
           // _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + ":grinning:"
-          readStream(reader);
+            this.readStream(reader,_this, currentResLocation,"completion");
         })
       } catch (error) {
 
@@ -956,7 +998,7 @@ export default {
     font-weight: 100;
     /* margin: 0 20px; */
     width: 98%;
-    height: 50px !important; 
+    height: 70px !important;
 
   }
 }
@@ -1006,7 +1048,7 @@ textarea::-webkit-scrollbar-thumb {
 .chat-window {
   width: 100%;
   height: 100%;
-  margin-left: 20px;
+  margin-left: 0px;
   position: relative;
 
   .top {
@@ -1068,7 +1110,7 @@ textarea::-webkit-scrollbar-thumb {
     background-size: 100% 100%;
     // background-color: rgb(50, 54, 68);
     border-radius: 20px;
-    padding: 20px;
+    padding: 0px;
     box-sizing: border-box;
     position: relative;
 
@@ -1116,6 +1158,7 @@ textarea::-webkit-scrollbar-thumb {
           float: left;
           max-width: 90%;
           padding: 15px;
+          max-width: 650px;
           border-radius: 20px 20px 20px 5px;
           background-color: #fff;
         }
@@ -1212,12 +1255,12 @@ textarea::-webkit-scrollbar-thumb {
     }
 
     .chatInputs {
-      width: 90%;
+      width: 100%;
       position: absolute;
       bottom: 0;
       margin: 3%;
       display: flex;
-
+      background-color: #323644;
       .boxinput {
         width: 50px;
         height: 50px;
@@ -1359,6 +1402,21 @@ textarea::-webkit-scrollbar-thumb {
   50.1%,
   100% {
     transform: scaleX(0);
+  }
+}
+@media only screen and (min-width: 768px) { // 当屏幕宽度大于或等于768px时
+  .chat-window{
+    margin-left: 20px;
+    .botoom {
+      padding: 20px;
+    }
+  }
+  .chat-window {
+    .botoom {
+      .chatInputs{
+        width: 90%;
+      }
+    }
   }
 }
 </style>
