@@ -757,7 +757,6 @@ export default {
           this.$nextTick(() => {
             this.acqStatus = true
           });
-          // _this.chatList[currentResLocation].msg = _this.chatList[currentResLocation].msg + ":grinning:"
             this.readStream(reader,_this, currentResLocation,"completion");
         })
       } catch (error) {
@@ -891,6 +890,9 @@ export default {
           this.srcImgList.push(imgInfo.url);
         }
         this.acqStatus = true
+      }).catch(e=>{
+        console.log("错误")
+        console.log(e)
       })
       e.target.files = null;
     },
